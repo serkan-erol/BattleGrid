@@ -18,7 +18,7 @@ public static class AuthCookieExtensions
         {
             HttpOnly = true,
             Secure = isHttps,
-            SameSite = SameSiteMode.Lax,
+            SameSite = SameSiteMode.None,
             Path = "/"
         };
 

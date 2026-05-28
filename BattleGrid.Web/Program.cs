@@ -37,6 +37,7 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error");
 }
 
+app.MapStaticAssets();
 app.UseStaticFiles();
 app.UseRouting();
 app.MapControllers();
