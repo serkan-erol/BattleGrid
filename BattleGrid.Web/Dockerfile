@@ -1,10 +1,11 @@
 ﻿FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 WORKDIR /app
-EXPOSE 8080
+
+ENV ASPNETCORE_URLS=http://+:10000
+EXPOSE 10000
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
-
 
 COPY ["BattleGrid.Web/BattleGrid.Web.csproj",						  "BattleGrid.Web/"]
 COPY ["BattleGrid.Contracts/BattleGrid.Contracts.csproj",             "BattleGrid.Contracts/"]
