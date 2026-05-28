@@ -15,7 +15,7 @@ RUN dotnet restore "BattleGrid.Web/BattleGrid.Web.csproj"
 
 COPY . .
 #WORKDIR "/src/BattleGrid.Web"
-RUN dotnet publish "BattleGrid.Web.csproj" -c Release -o /app/publish --no-restore
+RUN dotnet publish "BattleGrid.Web/BattleGrid.Web.csproj" -c Release -o /app/publish --no-restore
 
 FROM base AS final
 WORKDIR /app
