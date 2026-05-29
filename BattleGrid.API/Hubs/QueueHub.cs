@@ -1,7 +1,7 @@
-﻿using System.Security.Claims;
-using BattleGrid.API.Matchmaking;
+﻿using BattleGrid.API.Matchmaking;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using System.Security.Claims;
 
 namespace BattleGrid.API.Hubs;
 

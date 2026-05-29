@@ -1,7 +1,5 @@
 ﻿using BattleGrid.Contracts.RequestDtos;
 using BattleGrid.Contracts.ResponseDtos;
-using BattleGrid.Domain.Entities;
-using BattleGrid.Domain.Enums;
 
 namespace BattleGrid.Application.Interfaces
 {

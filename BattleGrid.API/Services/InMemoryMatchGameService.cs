@@ -1,5 +1,3 @@
-using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 using BattleGrid.API.Hubs;
 using BattleGrid.Application.Interfaces;
 using BattleGrid.Contracts.RequestDtos;
@@ -10,6 +8,8 @@ using BattleGrid.Domain.GameLogic;
 using BattleGrid.Infrastructure.Data;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 
 namespace BattleGrid.API.Services;
 
@@ -991,7 +991,7 @@ public sealed class InMemoryMatchGameService
                 if (result == ShotResult.Win)
                     winnerId = g.WinnerId;
 
-            Exit: ;
+            Exit:;
             }
 
             if (fireEx is not null)

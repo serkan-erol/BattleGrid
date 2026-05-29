@@ -145,24 +145,23 @@ else
                 }
                 else
                 {
-                    <a href="/queue" class="btn btn-primary btn-full">FIND A MATCH</a>
+                    <a href="/queue" class="btn btn-primary btn-full">
+                        @(Matchmaking.IsInQueue ? "IN QUEUE" : "FIND A MATCH")
+                        @if (Matchmaking.IsInQueue && Matchmaking.QueueStartedUtc is not null)
+                        {
+                            <span class="nav-queue-timer">@QueueMatchmakingService.FormatWaitClock(Matchmaking.GetQueueElapsed())</span>
+                        }
+                    </a>
                 }
-                @if (!Resumable.HasResumableMatch && Matchmaking.IsInQueue)
-                {
-                    <p class="muted mt-sm" style="font-size: 1rem;">
-                        In matchmaking · @QueueMatchmakingService.FormatWaitClock(Matchmaking.GetQueueElapsed())
-                    </p>
-                    <button type="button" class="btn btn-danger btn-full mt-sm" @onclick="LeaveQueueFromDashboardAsync">LEAVE QUEUE</button>
-                }
-                <a href="/settings" class="btn btn-outline btn-full mt-sm">ACCOUNT SETTINGS</a>
                 <a href="/match-history" class="btn btn-outline btn-full mt-sm">MATCH HISTORY</a>
+                <a href="/settings" class="btn btn-outline btn-full mt-sm">ACCOUNT SETTINGS</a>                
                 @if (Auth.CurrentUser!.IsAdmin)
                 {
-                    <a href="/users" class="btn btn-outline btn-full">VIEW ALL OPERATORS</a>
+                    <a href="/admin" class="btn btn-outline btn-full">ADMIN PANEL</a>
                 }
                 @if (Auth.CurrentUser!.IsAdmin)
                 {
-                    <a href="http://localhost:4744/swagger" target="_blank" class="btn btn-outline btn-full">OPEN API DOCS ↗</a>
+                    <a href="/users" class="btn btn-outline btn-full">VIEW ALL PERSONNEL</a>
                 }
                 <button class="btn btn-danger btn-full" @onclick="Logout">LOGOUT</button>
             </div>

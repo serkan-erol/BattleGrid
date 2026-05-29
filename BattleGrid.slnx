@@ -13,20 +13,19 @@
     <File Path=".gitattributes" />
     <File Path=".gitignore" />
     <File Path="LICENSE.txt" />
-    <File Path="start.sh" />
   </Folder>
   <Folder Name="/src/">
     <File Path=".dockerignore" />
     <File Path="docker-compose.yml" />
     <Project Path="BattleGrid.API/BattleGrid.API.csproj" Id="7b223ad9-f464-4db7-aafd-afcbb3be06fe" />
     <Project Path="BattleGrid.Application/BattleGrid.Application.csproj" Id="7e333648-791e-48aa-ae37-9b92a5cd2a92" />
-    <Project Path="BattleGrid.Console/BattleGrid.Console.csproj" Id="3e9f1f59-f908-43a2-99c2-9ca26363bdbb" />
     <Project Path="BattleGrid.Contracts/BattleGrid.Contracts.csproj" Id="445b58bd-05ce-4db2-ab29-1bbda35aafe3" />
     <Project Path="BattleGrid.Domain/BattleGrid.Domain.csproj" Id="78c908d1-5da8-4b56-b623-13ea053a6a5a" />
     <Project Path="BattleGrid.Infrastructure/BattleGrid.Infrastructure.csproj" Id="c52152aa-e2d5-436f-af15-255ab4b51d3a" />
     <Project Path="BattleGrid.Web/BattleGrid.Web.csproj" Id="1455ec1d-e29e-4cf0-aaad-af4ad9f20d6f" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="BattleGrid.Console/BattleGrid.Console.csproj" Id="3e9f1f59-f908-43a2-99c2-9ca26363bdbb" />
     <Project Path="BattleGrid.Tests/BattleGrid.Tests.csproj" Id="cc7a72f0-436e-4ad8-b4a1-58ab6bf6e12c" />
   </Folder>
 </Solution>

@@ -1,5 +1,4 @@
-﻿using BattleGrid.Application.Helpers;
-using BattleGrid.Application.Interfaces;
+﻿using BattleGrid.Application.Interfaces;
 using BattleGrid.Contracts.RequestDtos;
 using BattleGrid.Contracts.ResponseDtos;
 using BattleGrid.Domain.Entities;
@@ -63,6 +62,15 @@ namespace BattleGrid.Application.Services
                 {
                     Success = false,
                     Message = "User name may only contain letters, numbers, and underscores."
+                };
+            }
+
+            if (!string.Equals(dto.Password, dto.ConfirmPassword, StringComparison.Ordinal))
+            {
+                return new GeneralResponseDto
+                {
+                    Success = false,
+                    Message = "Password and confirmation do not match."
                 };
             }
 
@@ -511,6 +519,33 @@ namespace BattleGrid.Application.Services
 
         public async Task<GeneralResponseDto> UpdatePasswordAsync(PasswordUpdateRequestDto dto)
         {
+            if (string.IsNullOrWhiteSpace(dto.NewPassword))
+            {
+                return new GeneralResponseDto
+                {
+                    Success = false,
+                    Message = "New password is required."
+                };
+            }
+                        
+            if (string.IsNullOrWhiteSpace(dto.ConfirmNewPassword))
+            {
+                return new GeneralResponseDto
+                {
+                    Success = false,
+                    Message = "Password confirmation is required."
+                };
+            }
+
+            if (!string.Equals(dto.NewPassword, dto.ConfirmNewPassword, StringComparison.Ordinal))
+            {
+                return new GeneralResponseDto
+                {
+                    Success = false,
+                    Message = "New password and confirmation do not match."
+                };
+            }
+
             var user = await _context.User
                 .FirstOrDefaultAsync(u => u.UserID == dto.UserID);
 
@@ -529,15 +564,6 @@ namespace BattleGrid.Application.Services
                 {
                     Success = false,
                     Message = "This account is deactivated."
-                };
-            }
-
-            if (string.IsNullOrWhiteSpace(dto.NewPassword))
-            {
-                return new GeneralResponseDto
-                {
-                    Success = false,
-                    Message = "New password is required."
                 };
             }
 
@@ -560,8 +586,10 @@ namespace BattleGrid.Application.Services
                 return authSuccess;
             }
 
-            // If new password can match with old password's hash, it is the same password. 
-            if (dto.OldPassword == dto.NewPassword)
+            // If new password matches with old password, there is nothing to do. Just return failure message
+            // This only compares old and new password fields in the DTO. Does NOT compare against user's actual password hash
+            // However, we are doing this check after the verification. So, old password field has to be correct!
+            if (string.Equals(dto.OldPassword, dto.NewPassword, StringComparison.Ordinal))
             {
                 return new GeneralResponseDto
                 {
@@ -570,13 +598,18 @@ namespace BattleGrid.Application.Services
                 };
             }
 
+            // Hash the new password
             var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+
+            // Update the PasswordHash and the LastUpdatedAt in the database
             user.PasswordHash = newPasswordHash;
             user.LastUpdatedAt = DateTimeOffset.UtcNow.ToUniversalTime();
-            user.UpdateReason = "Password changed by user (settings)";
+            user.UpdateReason = "Password changed by user";
 
+            // Save the changes to the database
             await _context.SaveChangesAsync();
 
+            // Verify the new password
             var verifySuccess = BCrypt.Net.BCrypt.Verify(dto.NewPassword, user.PasswordHash);
 
             if (!verifySuccess)

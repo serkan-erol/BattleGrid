@@ -6,8 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\BattleGrid.Domain\BattleGrid.Domain.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BattleGrid.Domain\BattleGrid.Domain.csproj" />
+  </ItemGroup>
 
 </Project>

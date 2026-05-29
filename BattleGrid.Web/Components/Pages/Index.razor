@@ -2,6 +2,7 @@
 @implements IDisposable
 @inject ApiService Api
 @inject AuthStateService Auth
+@inject QueueMatchmakingService Matchmaking
 @inject ResumableMatchService Resumable
 
 <PageTitle>BattleGrid - Command Center</PageTitle>
@@ -20,7 +21,13 @@
                 }
                 else
                 {
-                    <a href="/queue" class="btn btn-primary btn-lg">FIND A MATCH</a>
+                    <a href="/queue" class="btn btn-primary btn-lg">
+                        @(Matchmaking.IsInQueue ? "IN QUEUE" : "FIND A MATCH")
+                        @if (Matchmaking.IsInQueue && Matchmaking.QueueStartedUtc is not null)
+                        {
+                            <span class="nav-queue-timer">@QueueMatchmakingService.FormatWaitClock(Matchmaking.GetQueueElapsed())</span>
+                        }
+                    </a>
                 }
                 <a href="/dashboard" class="btn btn-outline btn-lg">DASHBOARD</a>
             }
@@ -111,10 +118,13 @@
     protected override void OnInitialized()
     {
         Auth.OnChange += OnAuthChanged;
+        Matchmaking.OnStateChanged += OnMatchmakingChanged;
         Resumable.OnChange += OnResumableChanged;
     }
 
     void OnAuthChanged() => InvokeAsync(StateHasChanged);
+
+    void OnMatchmakingChanged() => InvokeAsync(StateHasChanged);
 
     void OnResumableChanged() => InvokeAsync(StateHasChanged);
 
@@ -187,6 +197,7 @@
     public void Dispose()
     {
         Auth.OnChange -= OnAuthChanged;
+        Matchmaking.OnStateChanged -= OnMatchmakingChanged;
         Resumable.OnChange -= OnResumableChanged;
     }
 }

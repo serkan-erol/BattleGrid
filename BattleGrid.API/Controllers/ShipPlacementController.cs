@@ -1,7 +1,6 @@
-
 using BattleGrid.API.Extensions;
-using BattleGrid.Contracts.RequestDtos;
 using BattleGrid.Application.Interfaces;
+using BattleGrid.Contracts.RequestDtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

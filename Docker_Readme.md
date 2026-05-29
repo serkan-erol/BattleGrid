@@ -15,7 +15,8 @@ Required "Dockerfile" and docker-compose.yml files are already included
  it is absolutely necessary.
 
 Since everything is already set up, after installing Docker you will need
- the following commands:
+to launch the Docker Desktop app to start the Docker Engine. Then you will
+need the following commands:
 
  To build the containers for the first time: `docker compose up --build`
   First build will take some time.
@@ -37,9 +38,8 @@ Since everything is already set up, after installing Docker you will need
   Adding the `-v` flag deletes volumes as well
 
  For whatever reason if you decide to query SQL with psql from a terminal
-  instead of creating using swaggerUI or using pgAdmin4 to query the DB:
+  instead of using swaggerUI or using pgAdmin4 to query the DB:
  `docker exec -it battlegrid_db psql -U postgres -d BattleGridDB`
-  (See below about querying the DB via pgAdmin3)
 
  For extra help: `docker help` or `docker --help`
 				 `docker compose --help`
@@ -67,8 +67,8 @@ To register a new server in pgAdmin4:
  -Change the port to 5433
  save it, and that is it. 
  
- In this new server you can see the version of BattleGridDB
-  that the container we created with docker uses. Any change made in this DB
+ In this new server you can see the version of BattleGridDB,
+  that the container we created with docker, uses. Any change made in this DB
   has no effect on the original DB. 
  For example, when you register a new user via swaggerUI 
  (ofcourse, while the containers are running) you can see this new user is added 

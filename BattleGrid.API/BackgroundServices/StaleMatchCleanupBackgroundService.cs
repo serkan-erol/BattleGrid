@@ -8,9 +8,9 @@ namespace BattleGrid.API.BackgroundServices;
 /// </summary>
 public sealed class StaleMatchCleanupBackgroundService : BackgroundService
 {
-    private static readonly TimeSpan TickInterval = TimeSpan.FromMinutes(5);
-    private static readonly TimeSpan StaleThreshold = TimeSpan.FromHours(1);
-    private readonly TimeSpan StartupDelay = TimeSpan.FromMinutes(2);    // Background service starts 2 mins after the server starts running
+    private static readonly TimeSpan TickInterval = TimeSpan.FromMinutes(5);    // Runs every 5 minutes
+    private static readonly TimeSpan StaleThreshold = TimeSpan.FromHours(1);    // Marks games that started at least an hour ago and still not finished as Abandoned
+    private readonly TimeSpan StartupDelay = TimeSpan.FromMinutes(2);           // Background service starts 2 mins after the server starts running
 
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<StaleMatchCleanupBackgroundService> _logger;
@@ -27,7 +27,7 @@ public sealed class StaleMatchCleanupBackgroundService : BackgroundService
     {
         using var timer = new PeriodicTimer(TickInterval);
 
-        // Initial delay to allow the application to fully start
+        // Initial delay to allow the application to fully start before running background services
         await Task.Delay(StartupDelay, stoppingToken);
 
         try

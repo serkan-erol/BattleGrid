@@ -1,0 +1,250 @@
+﻿@page "/leaderboard"
+@using BattleGrid.Contracts
+@using BattleGrid.Contracts.ResponseDtos
+@inject BattleGrid.Web.Services.ApiService Api
+@inject AuthStateService Auth
+
+<div class="dashboard-container">
+
+    <div class="page-header">
+        <h1><span class="accent">◈</span> TACTICAL RANKINGS</h1>
+        @if (_currentSeasonNo > 0)
+        {
+            <p class="muted">
+                Global combatant standings for <span class="badge badge-admin" style="background-color: #00bcd4; color: #000; font-weight: bold;">SEASON #@_currentSeasonNo</span> and historical records
+            </p>
+        }
+        else
+        {
+            <p class="muted">Global combatant standings and performance metrics</p>
+        }
+    </div>
+
+    <div class="mb-4" style="display: flex; gap: 10px;">
+        <button type="button" class="btn btn-sm @(_showAllTime ? "btn-primary" : "btn-outline-primary")" @onclick="() => ToggleTab(false)">
+            CURRENT SEASON
+        </button>
+        <button type="button" class="btn btn-sm @(_showAllTime ? "btn-outline-primary" : "btn-primary")" @onclick="() => ToggleTab(true)">
+            ALL-TIME PEAK
+        </button>
+    </div>
+
+    @if (_loading)
+    {
+        <div class="text-center p-5 muted">
+            <span class="status-dot online"></span> Retrieving tactical telemetry...
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="alert alert-danger">@_errorMessage</div>
+    }
+    else if (!_activeEntries.Any())
+    {
+        <div class="alert alert-warning text-center">
+            No combat records found for this sector. Be the first to secure a victory!
+        </div>
+    }
+    else
+    {
+        <div class="dashboard-grid" style="grid-template-columns: 1fr; gap: 0;">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <span class="icon">📊</span> COMMANDER STANDINGS
+                    <span class="muted" style="font-size: 0.85rem; margin-left: auto;">@GetRangeLabel()</span>
+                </div>
+                <div class="card-body" style="padding: 0;">
+
+                    <div class="table-responsive">
+                        <table class="table" style="width: 100%; border-collapse: collapse; text-align: left; margin: 0;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid rgba(255,255,255,0.1); color: var(--text-muted); font-size: 0.85rem; letter-spacing: 1px;">
+                                    <th style="padding: 12px; width: 100px;">RANK</th>
+                                    <th style="padding: 12px;">COMMANDER</th>
+                                    <th style="padding: 12px; width: 120px;">RATING</th>
+                                    <th style="padding: 12px; width: 100px; text-align: center;">MATCHES</th>
+                                    <th style="padding: 12px; width: 100px; text-align: center;">WON</th>
+                                    <th style="padding: 12px; width: 120px; text-align: center;">WIN RATE</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var entry in _pagedEntries)
+                                {
+                                    var isMe = Auth.CurrentUser?.UserID == entry.UserId;
+                                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); background: @(isMe ? "rgba(0, 188, 212, 0.15)" : "transparent");">
+                                        <td style="padding: 14px 12px; font-weight: bold;">
+                                            @if (entry.Rank == 1)
+                                            {
+                                                <span>🥇 1</span>
+                                            }
+                                            else if (entry.Rank == 2)
+                                            {
+                                                <span>🥈 2</span>
+                                            }
+                                            else if (entry.Rank == 3)
+                                            {
+                                                <span>🥉 3</span>
+                                            }
+                                            else
+                                            {
+                                                <span>#@entry.Rank</span>
+                                            }
+                                        </td>
+                                        <td style="padding: 14px 12px; font-weight: bold; color: @(isMe ? "#00bcd4" : "#fff");">
+                                            @entry.UserName
+                                            @if (isMe)
+                                            {
+                                                <span class="badge badge-admin" style="font-size: 0.7rem; padding: 2px 6px; margin-left: 8px;">YOU</span>
+                                            }
+                                        </td>
+                                        <td style="padding: 14px 12px; color: #4caf50; font-weight: bold; font-size: 1.05rem;">
+                                            @entry.Rating
+                                        </td>
+                                        <td style="padding: 14px 12px; text-align: center;">@entry.MatchesPlayed</td>
+                                        <td style="padding: 14px 12px; text-align: center; color: #81c784;">@entry.MatchesWon</td>
+                                        <td style="padding: 14px 12px; text-align: center; font-weight: bold;">
+                                            %@entry.WinRate.ToString("0.#")
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (_totalPages > 1)
+                    {
+                        <div class="table-pagination">
+                            <button type="button"
+                                    class="btn btn-outline btn-sm"
+                                    disabled="@(_currentPage <= 1)"
+                                    @onclick="GoToPreviousPage">
+                                ← PREVIOUS
+                            </button>
+                            <span class="table-pagination-meta muted">
+                                Page @_currentPage of @_totalPages
+                            </span>
+                            <button type="button"
+                                    class="btn btn-outline btn-sm"
+                                    disabled="@(_currentPage >= _totalPages)"
+                                    @onclick="GoToNextPage">
+                                NEXT →
+                            </button>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool _loading = true;
+    private string? _errorMessage;
+    private bool _showAllTime = false;
+    private int _currentSeasonNo = 0;
+    private int _currentPage = 1;
+    private int _pageSize = LeaderboardLimits.PageSize;
+    private int _totalPages = 1;
+
+    private List<LeaderboardEntryDto> _seasonEntries = new();
+    private List<LeaderboardEntryDto> _allTimeEntries = new();
+    private List<LeaderboardEntryDto> _activeEntries = new();
+    private IEnumerable<LeaderboardEntryDto> _pagedEntries = Enumerable.Empty<LeaderboardEntryDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Auth.InitializeAsync();
+        await LoadLeaderboardsAsync();
+    }
+
+    private async Task LoadLeaderboardsAsync()
+    {
+        _loading = true;
+        _errorMessage = null;
+        await InvokeAsync(StateHasChanged);
+
+        var seasonTask = Api.GetCurrentSeasonLeaderboardAsync();
+        var allTimeTask = Api.GetAllTimeLeaderboardAsync();
+
+        await Task.WhenAll(seasonTask, allTimeTask);
+
+        var seasonResult = await seasonTask;
+        var allTimeResult = await allTimeTask;
+
+        if (seasonResult is null || allTimeResult is null)
+        {
+            _errorMessage = "Failed to load tactical leaderboard data from telemetry services.";
+        }
+        else
+        {
+            _seasonEntries = seasonResult.Entries.ToList();
+            _allTimeEntries = allTimeResult.Entries.ToList();
+            _pageSize = seasonResult.PageSize > 0 ? seasonResult.PageSize : LeaderboardLimits.PageSize;
+
+            if (_seasonEntries.Any())
+                _currentSeasonNo = _seasonEntries.First().SeasonNo;
+
+            SetActiveTab(_showAllTime);
+        }
+
+        _loading = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void ToggleTab(bool showAllTime)
+    {
+        SetActiveTab(showAllTime);
+    }
+
+    private void SetActiveTab(bool showAllTime)
+    {
+        _showAllTime = showAllTime;
+        _activeEntries = _showAllTime ? _allTimeEntries : _seasonEntries;
+        _currentPage = 1;
+        UpdatePagedEntries();
+    }
+
+    private void UpdatePagedEntries()
+    {
+        var total = _activeEntries.Count;
+        _totalPages = total == 0 ? 1 : (int)Math.Ceiling(total / (double)_pageSize);
+        if (_currentPage > _totalPages)
+            _currentPage = _totalPages;
+        if (_currentPage < 1)
+            _currentPage = 1;
+
+        _pagedEntries = _activeEntries
+            .Skip((_currentPage - 1) * _pageSize)
+            .Take(_pageSize);
+    }
+
+    private void GoToPreviousPage()
+    {
+        if (_currentPage <= 1)
+            return;
+
+        _currentPage--;
+        UpdatePagedEntries();
+    }
+
+    private void GoToNextPage()
+    {
+        if (_currentPage >= _totalPages)
+            return;
+
+        _currentPage++;
+        UpdatePagedEntries();
+    }
+
+    private string GetRangeLabel()
+    {
+        var total = _activeEntries.Count;
+        if (total == 0)
+            return "No standings";
+
+        var start = (_currentPage - 1) * _pageSize + 1;
+        var end = Math.Min(_currentPage * _pageSize, total);
+        return $"Showing {start}–{end} of {total} commander(s)";
+    }
+}

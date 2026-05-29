@@ -1,9 +1,9 @@
-using System.Security.Claims;
 using BattleGrid.API.Services;
 using BattleGrid.Application.Interfaces;
 using BattleGrid.Contracts.RequestDtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using System.Security.Claims;
 
 namespace BattleGrid.API.Hubs;
 

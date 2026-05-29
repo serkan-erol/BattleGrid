@@ -1,5 +1,3 @@
-using BattleGrid.Contracts.RequestDtos;
-using BattleGrid.Contracts.ResponseDtos;
 using System.Security.Claims;
 
 namespace BattleGrid.Application.Interfaces

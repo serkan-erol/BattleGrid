@@ -1,11 +1,10 @@
+using BattleGrid.API.Hubs;
 using BattleGrid.Application.Interfaces;
 using BattleGrid.Domain;
 using BattleGrid.Domain.Entities;
 using BattleGrid.Domain.Enums;
 using BattleGrid.Infrastructure.Data;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
-using BattleGrid.API.Hubs;
 
 namespace BattleGrid.API.Matchmaking;
 
@@ -111,7 +110,7 @@ public sealed class MatchmakingCoordinator
                  */
                 for (var i = 0; i < ordered.Count && first is null; i++)
                 {
-                    
+
                     for (var j = i + 1; j < ordered.Count; j++)
                     {
                         if (RatingsMutuallyAcceptable(ordered[i], ordered[j], now))

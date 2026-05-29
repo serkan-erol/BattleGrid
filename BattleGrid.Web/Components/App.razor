@@ -23,11 +23,13 @@
 @code {
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (!firstRender)
+            return;
+
         await Auth.InitializeAsync();
         if (Auth.IsLoggedIn)
             await Resumable.RefreshAsync();
         await Matchmaking.TryResumeFromStoredIntentAsync();
-        if (firstRender)
-            StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
 }

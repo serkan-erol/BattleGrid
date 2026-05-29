@@ -25,14 +25,16 @@ services:
       dockerfile: BattleGrid.API/Dockerfile
     container_name: battlegrid_api
     ports:
-      - "4744:8080"    # Maps local port 4744 -> container's 8080
+      - "4744:10000"    # Maps local port 4744 -> container's 10000
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_URLS: http://+:10000
       ConnectionStrings__BattleGridDB: "Host=db;Port=5432;Database=BattleGridDB;Username=postgres;Password=1234;Include Error Detail=true"
       Jwt__Secret: "LongAndSecureEnoughSigningKeyForBattleGrid321!"
       Jwt__Issuer: "BattleGrid_Server"
       Jwt__Audience: "BattleGrid_User"
+      Cors__AllowedOrigins__0: "http://localhost:4746"
+
     depends_on:
       db:
         condition: service_healthy
@@ -44,11 +46,11 @@ services:
       dockerfile: BattleGrid.Web/Dockerfile
     container_name: battlegrid_web
     ports:
-      - "4745:8080"
+      - "4746:10000"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: http://+:8080
-      ApiBaseUrl: "http://api:8080"
+      ASPNETCORE_URLS: http://+:10000
+      ApiBaseUrl: "http://api:10000"
     depends_on:
       - api
     restart: on-failure

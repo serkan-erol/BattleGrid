@@ -1,6 +1,4 @@
-﻿using BattleGrid.Domain.Enums;
-
-namespace BattleGrid.Contracts.ResponseDtos
+﻿namespace BattleGrid.Contracts.ResponseDtos
 {
     public class UserResponseDto
     {
@@ -15,5 +13,18 @@ namespace BattleGrid.Contracts.ResponseDtos
         public bool IsBanned { get; set; }
 
         public bool IsActive { get; set; }
+    }
+
+    public class PagedUsersResponseDto
+    {
+        public List<UserResponseDto> Items { get; set; } = [];
+
+        public int Page { get; set; }
+
+        public int PageSize { get; set; }
+
+        public int TotalCount { get; set; }
+
+        public int TotalPages { get; set; }
     }
 }

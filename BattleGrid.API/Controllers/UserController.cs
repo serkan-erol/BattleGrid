@@ -20,22 +20,15 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("all")]
-    public async Task<ActionResult> GetAllUsers()
+    [Authorize(Policy = "Admin")]
+    public async Task<ActionResult<PagedUsersResponseDto>> GetAllUsers(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
     {
-        if (!User.TryGetAuthenticatedUserId(out var callerId))
-            return Unauthorized();
-
-        if (!await _userServices.IsAdminAsync(callerId))
-            return Forbid();
-
         try
         {
-            var users = await _userServices.GetAllUsersAsync();
-
-            if (users == null)
-                return NotFound("No user found!");
-
-            return Ok(users);
+            var result = await _userServices.GetUsersPageAsync(page, pageSize);
+            return Ok(result);
         }
         catch (Exception ex)
         {

@@ -102,7 +102,3 @@ CREATE TRIGGER validate_ship_count_trigger
 
 --aaa TODO: Implement a SP and a trigger that prevents any updates to it, 
 --         after a BanList entry is already marked as reverted
-
---aaa TODO: Implement a SP and a trigger to update BannedUntil field of 
---         BanList entries that are temporary, upon insertion, 
---         and based on the entry's BannedAt and Duration fields

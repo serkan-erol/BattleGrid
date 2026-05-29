@@ -7,5 +7,6 @@ namespace BattleGrid.Application.Interfaces
     {
         Task<GeneralResponseDto> BanPlayerAsync(BanRequestDto dto);
         Task<GeneralResponseDto> UnbanPlayerAsync(UnbanPlayerRequestDto dto);
+        Task<GeneralResponseDto> GrantAdminAsync(GrantAdminRequestDto dto);
     }
 }

@@ -1,53 +1,69 @@
 @page "/login"
+@implements IDisposable
 @inject ApiService Api
 @inject AuthStateService Auth
 @inject NavigationManager Nav
 
 <PageTitle>Login - BattleGrid</PageTitle>
 
-<div class="auth-page">
-    <div class="auth-card">
-        <div class="auth-header">
-            <div class="auth-icon">◉</div>
-            <h1>OPERATOR LOGIN</h1>
-            <p class="muted">Enter your credentials to access the system</p>
-        </div>
-
-        @if (!string.IsNullOrEmpty(errorMessage))
-        {
-            <div class="alert alert-danger">
-                <span>✘</span> @errorMessage
-            </div>
-        }
-
-        <EditForm Model="model" OnValidSubmit="HandleLogin">
-            <div class="form-group">
-                <label class="form-label">EMAIL OR USERNAME <span class="required">*</span></label>
-                <input class="form-control" placeholder="Email or username" @bind="model.LoginInfo" />
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">PASSWORD <span class="required">*</span></label>
-                <input class="form-control" type="password" placeholder="••••••••" @bind="model.Password" />
+@if (!Auth.IsInitialized)
+{
+    <div class="loading-screen">
+        <p class="muted">Restoring session...</p>
+    </div>
+}
+else if (Auth.IsLoggedIn)
+{
+    <div class="loading-screen">
+        <p class="muted">Redirecting to dashboard...</p>
+    </div>
+}
+else
+{
+    <div class="auth-page">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-icon">◉</div>
+                <h1>OPERATOR LOGIN</h1>
+                <p class="muted">Enter your credentials to access the system</p>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-full" disabled="@loading">
-                @if (loading)
-                {
-                    <span>AUTHENTICATING...</span>
-                }
-                else
-                {
-                    <span>LOGIN</span>
-                }
-            </button>
-        </EditForm>
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger">
+                    <span>✘</span> @errorMessage
+                </div>
+            }
 
-        <div class="auth-footer">
-            <p class="muted">New operator? <a href="/register" class="link">Register here</a></p>
+            <EditForm Model="model" OnValidSubmit="HandleLogin">
+                <div class="form-group">
+                    <label class="form-label">EMAIL OR USERNAME <span class="required">*</span></label>
+                    <input class="form-control" placeholder="Email or username" @bind="model.LoginInfo" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">PASSWORD <span class="required">*</span></label>
+                    <input class="form-control" type="password" placeholder="••••••••" @bind="model.Password" />
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full" disabled="@loading">
+                    @if (loading)
+                    {
+                        <span>AUTHENTICATING...</span>
+                    }
+                    else
+                    {
+                        <span>LOGIN</span>
+                    }
+                </button>
+            </EditForm>
+
+            <div class="auth-footer">
+                <p class="muted">New operator? <a href="/register" class="link">Register here</a></p>
+            </div>
         </div>
     </div>
-</div>
+}
 
 @code {
     LoginRequestDto model = new();
@@ -56,14 +72,19 @@
 
     protected override void OnInitialized()
     {
-        if (Auth.IsInitialized && Auth.IsLoggedIn)
-            Nav.NavigateTo("/dashboard");
+        Auth.OnChange += OnAuthChanged;
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (Auth.IsInitialized && Auth.IsLoggedIn)
-            Nav.NavigateTo("/dashboard");
+        if (!firstRender)
+            return;
+
+        await Auth.InitializeAsync();
+        if (Auth.IsLoggedIn)
+            Nav.NavigateTo("/dashboard", replace: true);
+
+        await InvokeAsync(StateHasChanged);
     }
 
     async Task HandleLogin()
@@ -98,4 +119,8 @@
         loading = false;
         Nav.NavigateTo("/dashboard");
     }
+
+    void OnAuthChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Auth.OnChange -= OnAuthChanged;
 }

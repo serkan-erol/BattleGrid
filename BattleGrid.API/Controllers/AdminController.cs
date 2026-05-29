@@ -9,7 +9,7 @@ namespace BattleGrid.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Policy = "Admin")]
 public sealed class AdminController : ControllerBase
 {
     private readonly IAdminServices _adminServices;
@@ -31,9 +31,6 @@ public sealed class AdminController : ControllerBase
         if (!User.TryGetAuthenticatedUserId(out var adminUserId))
             return Unauthorized();
 
-        if (!await CallerIsAdminAsync(adminUserId))
-            return Forbid();
-
         var result = await playerStatSeason.AdvanceSeasonAsync(adminUserId);
 
         if (!result.Success)
@@ -48,9 +45,6 @@ public sealed class AdminController : ControllerBase
     {
         if (!User.TryGetAuthenticatedUserId(out var adminUserId))
             return Unauthorized();
-
-        if (!await CallerIsAdminAsync(adminUserId))
-            return Forbid();
 
         if (!ModelState.IsValid)
             return ValidationProblem(ModelState);
@@ -72,9 +66,6 @@ public sealed class AdminController : ControllerBase
         if (!User.TryGetAuthenticatedUserId(out var adminUserId))
             return Unauthorized();
 
-        if (!await CallerIsAdminAsync(adminUserId))
-            return Forbid();
-
         if (!ModelState.IsValid)
             return ValidationProblem(ModelState);
 
@@ -87,16 +78,29 @@ public sealed class AdminController : ControllerBase
         return Ok(result);
     }
 
-    /// <summary>Operator profile with all season stat rows (admin only).</summary>
-    [HttpGet("players/{userId:int}/profile")]
-    public async Task<ActionResult<AdminUserProfileResponseDto>> GetPlayerProfile(int userId)
+    /// <summary>Grants administrator privileges to a player by username or email.</summary>
+    [HttpPost("players/grant-admin")]
+    public async Task<ActionResult<GeneralResponseDto>> GrantAdmin([FromBody] GrantAdminRequestDto dto)
     {
         if (!User.TryGetAuthenticatedUserId(out var adminUserId))
             return Unauthorized();
 
-        if (!await CallerIsAdminAsync(adminUserId))
-            return Forbid();
+        if (!ModelState.IsValid)
+            return ValidationProblem(ModelState);
 
+        dto.AdminID = adminUserId;
+
+        var result = await _adminServices.GrantAdminAsync(dto);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    /// <summary>Operator profile with all season stat rows (admin only).</summary>
+    [HttpGet("players/{userId:int}/profile")]
+    public async Task<ActionResult<AdminUserProfileResponseDto>> GetPlayerProfile(int userId)
+    {
         var profile = await _userServices.GetAdminUserProfileAsync(userId);
         if (profile is null)
             return NotFound();
@@ -111,12 +115,6 @@ public sealed class AdminController : ControllerBase
         [FromServices] IReplayServices replay,
         [FromQuery] int limit = 20)
     {
-        if (!User.TryGetAuthenticatedUserId(out var adminUserId))
-            return Unauthorized();
-
-        if (!await CallerIsAdminAsync(adminUserId))
-            return Forbid();
-
         if (await _userServices.GetByIdAsync(userId) is null)
             return NotFound();
 
@@ -130,22 +128,10 @@ public sealed class AdminController : ControllerBase
         int matchId,
         [FromServices] IReplayServices replay)
     {
-        if (!User.TryGetAuthenticatedUserId(out var adminUserId))
-            return Unauthorized();
-
-        if (!await CallerIsAdminAsync(adminUserId))
-            return Forbid();
-
         var dto = await replay.GetMatchReplayForAdminAsync(matchId);
         if (dto is null)
             return NotFound();
 
         return Ok(dto);
-    }
-
-    private async Task<bool> CallerIsAdminAsync(int userId)
-    {
-        var user = await _userServices.GetByIdAsync(userId);
-        return user is { IsAdmin: true };
     }
 }

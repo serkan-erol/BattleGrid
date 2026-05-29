@@ -1,0 +1,17 @@
+[
+  {
+    "Name": "LaunchApp",
+    "Projects": [
+      {
+        "Path": "BattleGrid.API\\BattleGrid.API.csproj",
+        "Action": "Start",
+        "DebugTarget": "https"
+      },
+      {
+        "Path": "BattleGrid.Web\\BattleGrid.Web.csproj",
+        "Action": "Start",
+        "DebugTarget": "https"
+      }
+    ]
+  }
+]

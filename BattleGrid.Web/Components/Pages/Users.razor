@@ -55,8 +55,8 @@ else
     else
     {
         <div class="table-toolbar">
-            <span class="muted">@users.Count operator(s) on record</span>
-            <button class="btn btn-outline btn-sm" @onclick="Reload">↻ REFRESH</button>
+            <span class="muted">@GetRangeLabel()</span>
+            <button class="btn btn-outline btn-sm" @onclick="Reload" disabled="@loading">↻ REFRESH</button>
         </div>
 
         <div class="table-wrapper">
@@ -99,11 +99,37 @@ else
                 </tbody>
             </table>
         </div>
+
+        @if (totalPages > 1)
+        {
+            <div class="table-pagination">
+                <button type="button"
+                        class="btn btn-outline btn-sm"
+                        disabled="@(currentPage <= 1 || loading)"
+                        @onclick="GoToPreviousPage">
+                    ← PREVIOUS
+                </button>
+                <span class="table-pagination-meta muted">
+                    Page @currentPage of @totalPages
+                </span>
+                <button type="button"
+                        class="btn btn-outline btn-sm"
+                        disabled="@(currentPage >= totalPages || loading)"
+                        @onclick="GoToNextPage">
+                    NEXT →
+                </button>
+            </div>
+        }
     }
 }
 
 @code {
-    List<UserResponseDto>? users;
+    const int PageSize = 20;
+
+    List<UserResponseDto> users = [];
+    int currentPage = 1;
+    int totalPages;
+    int totalCount;
     bool loading = true;
     string? errorMessage;
     bool _pageDataLoaded;
@@ -141,14 +167,56 @@ else
         errorMessage = null;
         await InvokeAsync(StateHasChanged);
 
-        users = await Api.GetAllUsersAsync();
-        if (users == null)
+        var result = await Api.GetUsersPageAsync(currentPage, PageSize);
+        if (result == null)
+        {
             errorMessage = "Failed to load personnel data. Is the API running?";
+            users = [];
+            loading = false;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        users = result.Items;
+        currentPage = result.Page;
+        totalPages = result.TotalPages;
+        totalCount = result.TotalCount;
         loading = false;
         await InvokeAsync(StateHasChanged);
     }
 
-    async Task Reload() => await LoadUsers();
+    async Task Reload()
+    {
+        await LoadUsers();
+    }
+
+    async Task GoToPreviousPage()
+    {
+        if (currentPage <= 1 || loading)
+            return;
+
+        currentPage--;
+        await LoadUsers();
+    }
+
+    async Task GoToNextPage()
+    {
+        if (currentPage >= totalPages || loading)
+            return;
+
+        currentPage++;
+        await LoadUsers();
+    }
+
+    string GetRangeLabel()
+    {
+        if (totalCount == 0)
+            return "0 operator(s) on record";
+
+        var start = (currentPage - 1) * PageSize + 1;
+        var end = Math.Min(currentPage * PageSize, totalCount);
+        return $"Showing {start}–{end} of {totalCount} operator(s)";
+    }
 
     private async void OnAuthChanged()
     {

@@ -42,7 +42,7 @@ public sealed class MatchController : ControllerBase
     }
 
     [HttpGet("history")]
-    public async Task<ActionResult<MatchHistoryResponseDto>> History( [FromServices] IReplayServices replay, [FromQuery] int limit = 20)
+    public async Task<ActionResult<MatchHistoryResponseDto>> History([FromServices] IReplayServices replay, [FromQuery] int limit = 20)
     {
         if (!User.TryGetAuthenticatedUserId(out var uid))
             return Unauthorized();

@@ -1,5 +1,7 @@
+using BattleGrid.Contracts;
 using BattleGrid.Contracts.RequestDtos;
 using BattleGrid.Contracts.ResponseDtos;
+using BattleGrid.Web.Extensions;
 using BattleGrid.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
@@ -12,9 +14,6 @@ namespace BattleGrid.Web.Controllers;
 [Route("auth/session")]
 public class AuthSessionController : ControllerBase
 {
-    public const string AccessTokenCookieName = "bg_access_token";
-    public const string RefreshTokenCookieName = "bg_refresh_token";
-
     /// <summary>
     /// Aligns with typical JWT bearer validation: accept tokens slightly past <c>exp</c>
     /// if resource server clock is behind (see Microsoft.IdentityModel Validators).
@@ -36,13 +35,13 @@ public class AuthSessionController : ControllerBase
     [HttpGet("read")]
     public async Task<IActionResult> Read()
     {
-        if (!Request.Cookies.TryGetValue(RefreshTokenCookieName, out var refreshToken) ||
+        if (!Request.Cookies.TryGetValue(AuthCookieNames.RefreshToken, out var refreshToken) ||
             string.IsNullOrWhiteSpace(refreshToken))
         {
             return NoContent();
         }
 
-        Request.Cookies.TryGetValue(AccessTokenCookieName, out var accessToken);
+        Request.Cookies.TryGetValue(AuthCookieNames.AccessToken, out var accessToken);
 
         if (!string.IsNullOrWhiteSpace(accessToken)
             && TryBuildUserFromAccessToken(accessToken!, out var user, out var atExpires)
@@ -61,16 +60,16 @@ public class AuthSessionController : ControllerBase
         var login = await TryRefreshAsync(refreshToken!);
         if (login is null || !login.Success)
         {
-            ClearTokenCookies();
+            Response.ClearAuthCookies();
             return NoContent();
         }
 
-        AppendTokenCookies(login);
+        Response.AppendAuthCookies(login, Request.IsHttps);
 
         if (!TryBuildUserFromAccessToken(login.AccessToken, out var userAfterRefresh, out var newAtExp)
             || !IsAccessTokenStillValid(newAtExp))
         {
-            ClearTokenCookies();
+            Response.ClearAuthCookies();
             return NoContent();
         }
 
@@ -100,11 +99,12 @@ public class AuthSessionController : ControllerBase
             return BadRequest("Missing token expiry.");
         }
 
-        AppendTokenCookies(
+        Response.AppendAuthCookies(
             state.AccessToken,
             state.RefreshToken,
             state.AccessTokenExpiry.Value,
-            state.RefreshTokenExpiry.Value);
+            state.RefreshTokenExpiry.Value,
+            Request.IsHttps);
 
         return Ok();
     }
@@ -112,7 +112,7 @@ public class AuthSessionController : ControllerBase
     [HttpPost("clear")]
     public IActionResult Clear()
     {
-        ClearTokenCookies();
+        Response.ClearAuthCookies();
         return Ok();
     }
 
@@ -160,61 +160,6 @@ public class AuthSessionController : ControllerBase
         {
             return null;
         }
-    }
-
-    private void AppendTokenCookies(LoginResponseDto tokens) =>
-        AppendTokenCookies(
-            tokens.AccessToken,
-            tokens.RefreshToken,
-            tokens.ATExpiresAt,
-            tokens.RTExpiresAt);
-
-    private void AppendTokenCookies(
-        string accessToken,
-        string refreshToken,
-        DateTimeOffset accessExpires,
-        DateTimeOffset refreshExpires)
-    {
-        var cookieBase = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = Request.IsHttps,
-            SameSite = SameSiteMode.Lax,
-            Path = "/"
-        };
-
-        Response.Cookies.Append(
-            AccessTokenCookieName,
-            accessToken,
-            new CookieOptions
-            {
-                HttpOnly = cookieBase.HttpOnly,
-                Secure = cookieBase.Secure,
-                SameSite = cookieBase.SameSite,
-                Path = cookieBase.Path,
-                Expires = accessExpires
-            });
-
-        Response.Cookies.Append(
-            RefreshTokenCookieName,
-            refreshToken,
-            new CookieOptions
-            {
-                HttpOnly = cookieBase.HttpOnly,
-                Secure = cookieBase.Secure,
-                SameSite = cookieBase.SameSite,
-                Path = cookieBase.Path,
-                Expires = refreshExpires
-            });
-    }
-
-    private void ClearTokenCookies()
-    {
-        var opts = new CookieOptions { Path = "/" };
-        Response.Cookies.Delete(AccessTokenCookieName, opts);
-        Response.Cookies.Delete(RefreshTokenCookieName, opts);
-        /* Legacy: older builds stored a redundant user mirror cookie */
-        Response.Cookies.Delete("bg_user", opts);
     }
 
     /// <summary>

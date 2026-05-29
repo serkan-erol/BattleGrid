@@ -206,6 +206,42 @@ else
                     </div>
                 </div>
 
+                <div class="card admin-grant-admin-card">
+                    <div class="card-header">
+                        <span class="card-icon">★</span>
+                        <span class="card-label">GRANT ADMIN</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="muted admin-panel-help">
+                            Promote a player to administrator. They must sign in again before admin pages and actions are available.
+                        </p>
+
+                        <div class="admin-form-field">
+                            <label class="admin-form-label" for="grant-admin-player-info">Player (username or email)</label>
+                            <input id="grant-admin-player-info"
+                                   class="form-control"
+                                   @bind="_grantAdminPlayerInfo"
+                                   @bind:event="oninput"
+                                   placeholder="username or email"
+                                   disabled="@_grantingAdmin" />
+                        </div>
+
+                        @if (_grantAdminStatusMessage is { } grantAdminMsg)
+                        {
+                            <div class="alert @(_grantAdminStatusSuccess ? "alert-info" : "alert-danger") mt-sm">
+                                <span>@(_grantAdminStatusSuccess ? "✓" : "✘")</span> @grantAdminMsg
+                            </div>
+                        }
+
+                        <button type="button"
+                                class="btn btn-primary mt-sm"
+                                disabled="@(_grantingAdmin || !CanSubmitGrantAdmin)"
+                                @onclick="GrantAdminAsync">
+                            @(_grantingAdmin ? "GRANTING…" : "GRANT ADMIN")
+                        </button>
+                    </div>
+                </div>
+
                 <div class="card admin-replay-card">
                     <div class="card-header">
                         <span class="card-icon">▶</span>
@@ -251,14 +287,17 @@ else
     bool _advancingSeason;
     bool _banningPlayer;
     bool _unbanningPlayer;
+    bool _grantingAdmin;
     bool _openingReplay;
     bool _seasonStatusSuccess;
     bool _banStatusSuccess;
     bool _unbanStatusSuccess;
+    bool _grantAdminStatusSuccess;
     bool _replayStatusSuccess;
     string? _seasonStatusMessage;
     string? _banStatusMessage;
     string? _unbanStatusMessage;
+    string? _grantAdminStatusMessage;
     string? _replayStatusMessage;
     PlayerSeasonStatsResponseDto? _seasonStats;
 
@@ -267,6 +306,7 @@ else
     string _banReason = string.Empty;
     string _unbanPlayerInfo = string.Empty;
     string _unbanReason = string.Empty;
+    string _grantAdminPlayerInfo = string.Empty;
     bool _banIsTemporary;
     int _banDurationDays = 7;
 
@@ -275,6 +315,9 @@ else
 
     bool CanSubmitUnban =>
         !string.IsNullOrWhiteSpace(_unbanPlayerInfo) && !string.IsNullOrWhiteSpace(_unbanReason);
+
+    bool CanSubmitGrantAdmin =>
+        !string.IsNullOrWhiteSpace(_grantAdminPlayerInfo);
 
     bool CanOpenReplay =>
         int.TryParse(_replayMatchIdInput.Trim(), out var id) && id > 0;
@@ -424,6 +467,42 @@ else
             _unbanStatusMessage = result.Message;
             _unbanPlayerInfo = string.Empty;
             _unbanReason = string.Empty;
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    async Task GrantAdminAsync()
+    {
+        _grantingAdmin = true;
+        _grantAdminStatusMessage = null;
+        await InvokeAsync(StateHasChanged);
+
+        var request = new GrantAdminRequestDto
+        {
+            PlayerInfo = _grantAdminPlayerInfo.Trim()
+        };
+
+        var result = await Api.GrantAdminAsync(request);
+        _grantingAdmin = false;
+
+        if (result is null)
+        {
+            _grantAdminStatusSuccess = false;
+            _grantAdminStatusMessage = "Could not reach the API. Is the server running?";
+        }
+        else if (!result.Success)
+        {
+            _grantAdminStatusSuccess = false;
+            _grantAdminStatusMessage = string.IsNullOrWhiteSpace(result.Message)
+                ? "Grant admin was rejected."
+                : result.Message;
+        }
+        else
+        {
+            _grantAdminStatusSuccess = true;
+            _grantAdminStatusMessage = result.Message;
+            _grantAdminPlayerInfo = string.Empty;
         }
 
         await InvokeAsync(StateHasChanged);

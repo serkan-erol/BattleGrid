@@ -20,23 +20,13 @@
         {
             <NavLink href="/" class="nav-link" Match="NavLinkMatch.All">HOME</NavLink>
             <NavLink href="/shiptypes" class="nav-link">FLEET</NavLink>
-            @if (Auth.CurrentUser?.IsAdmin == true)
-            {
-                <NavLink href="/users" class="nav-link">PERSONNEL</NavLink>
-            }
+            <NavLink href="/leaderboard" class="nav-link">LEADERBOARD</NavLink>
         }
 
         @if (Auth.IsLoggedIn)
         {
             @if (!MatchSession.IsLocked)
             {
-                <NavLink href="/dashboard" class="nav-link">DASHBOARD</NavLink>
-                <NavLink href="/settings" class="nav-link">SETTINGS</NavLink>
-                <NavLink href="/match-history" class="nav-link">HISTORY</NavLink>
-                @if (Auth.CurrentUser?.IsAdmin == true)
-                {
-                    <NavLink href="/admin" class="nav-link">ADMIN</NavLink>
-                }
                 @if (Resumable.HasResumableMatch && Resumable.MatchId is int navMatchId)
                 {
                     <NavLink href="@($"/game/{navMatchId}")" class="nav-link nav-queue-link">REJOIN MATCH</NavLink>
@@ -44,7 +34,7 @@
                 else
                 {
                     <NavLink href="/queue" class="nav-link nav-queue-link">
-                        FIND MATCH
+                        @(Matchmaking.IsInQueue ? "IN QUEUE" : "FIND MATCH")
                         @if (Matchmaking.IsInQueue && Matchmaking.QueueStartedUtc is not null)
                         {
                             <span class="nav-queue-timer">@QueueMatchmakingService.FormatWaitClock(Matchmaking.GetQueueElapsed())</span>
@@ -52,25 +42,83 @@
                     </NavLink>
                 }
             }
-            <span class="nav-user">
-                <span class="status-dot online"></span>
-                @(string.IsNullOrWhiteSpace(Auth.CurrentUser?.UserName) ? "-" : Auth.CurrentUser!.UserName)
-                @if (Auth.CurrentUser?.IsAdmin == true)
+
+            @if (_userMenuOpen)
+            {
+                <button type="button" class="nav-dropdown-backdrop" aria-label="Close menu" @onclick="CloseMenus"></button>
+            }
+
+            <div class="nav-dropdown">
+                <button type="button"
+                        class="nav-user nav-user-trigger"
+                        aria-expanded="@_userMenuOpen"
+                        aria-haspopup="true"
+                        @onclick="ToggleUserMenu"
+                        @onclick:stopPropagation="true">
+                    <span class="status-dot online"></span>
+                    @(string.IsNullOrWhiteSpace(Auth.CurrentUser?.UserName) ? "-" : Auth.CurrentUser!.UserName)
+                    @if (Auth.CurrentUser?.IsAdmin == true)
+                    {
+                        <span class="badge badge-admin">ADMIN</span>
+                    }
+                    <span class="nav-user-chevron @(_userMenuOpen ? "is-open" : "")" aria-hidden="true">▾</span>
+                </button>
+
+                @if (_userMenuOpen)
                 {
-                    <span class="badge badge-admin">ADMIN</span>
+                    <div class="nav-dropdown-menu" @onclick:stopPropagation="true">
+                        @if (!MatchSession.IsLocked)
+                        {
+                            <NavLink href="/dashboard" class="nav-dropdown-item" @onclick="CloseMenus">DASHBOARD</NavLink>
+                            <NavLink href="/match-history" class="nav-dropdown-item" @onclick="CloseMenus">MATCH HISTORY</NavLink>
+                            <NavLink href="/settings" class="nav-dropdown-item" @onclick="CloseMenus">SETTINGS</NavLink>                            
+
+                            @if (Auth.CurrentUser?.IsAdmin == true)
+                            {
+                                <div class="nav-dropdown-submenu">
+                                    <button type="button"
+                                            class="nav-dropdown-item nav-dropdown-submenu-trigger"
+                                            aria-expanded="@_adminSubmenuOpen"
+                                            @onclick="ToggleAdminSubmenu">
+                                        COMMAND
+                                        <span class="nav-submenu-chevron @(_adminSubmenuOpen ? "is-open" : "")" aria-hidden="true">▸</span>
+                                    </button>
+                                    @if (_adminSubmenuOpen)
+                                    {
+                                        <div class="nav-dropdown-submenu-panel">
+                                            <NavLink href="/admin" class="nav-dropdown-item nav-dropdown-subitem" @onclick="CloseMenus">ADMIN PANEL</NavLink>
+                                            <NavLink href="/users" class="nav-dropdown-item nav-dropdown-subitem" @onclick="CloseMenus">PERSONNEL</NavLink>
+                                        </div>
+                                    }
+                                </div>
+                            }
+
+                            <div class="nav-dropdown-divider"></div>
+                        }
+
+                        <button type="button"
+                                class="nav-dropdown-item nav-dropdown-item-danger"
+                                disabled="@MatchSession.IsLocked"
+                                title="@(MatchSession.IsLocked ? "Leave the match from the game screen." : null)"
+                                @onclick="Logout">
+                            LOGOUT
+                        </button>
+                    </div>
                 }
-            </span>
-            <button class="btn btn-sm btn-danger" @onclick="Logout">LOGOUT</button>
+            </div>
         }
         else if (!MatchSession.IsLocked)
         {
-            <NavLink href="/login" class="nav-link">LOGIN</NavLink>
             <NavLink href="/register" class="btn btn-sm btn-primary nav-btn">REGISTER</NavLink>
+            <NavLink href="/login" class="btn btn-sm btn-outline nav-btn">LOGIN</NavLink>            
         }
     </div>
 </nav>
 
 @code {
+    bool _userMenuOpen;
+    bool _adminSubmenuOpen;
+
     protected override void OnInitialized()
     {
         Auth.OnChange += StateHasChanged;
@@ -92,6 +140,21 @@
 
     void OnMatchmakingChanged() => _ = InvokeAsync(StateHasChanged);
 
+    void ToggleUserMenu()
+    {
+        _userMenuOpen = !_userMenuOpen;
+        if (!_userMenuOpen)
+            _adminSubmenuOpen = false;
+    }
+
+    void ToggleAdminSubmenu() => _adminSubmenuOpen = !_adminSubmenuOpen;
+
+    void CloseMenus()
+    {
+        _userMenuOpen = false;
+        _adminSubmenuOpen = false;
+    }
+
     async Task Logout()
     {
         if (MatchSession.IsLocked)
@@ -100,6 +163,7 @@
             return;
         }
 
+        CloseMenus();
         await Auth.LogoutAsync();
         Nav.NavigateTo("/");
     }

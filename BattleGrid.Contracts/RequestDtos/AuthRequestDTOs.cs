@@ -13,6 +13,9 @@ namespace BattleGrid.Contracts.RequestDtos
 
         [Required]
         public string Password { get; set; } = string.Empty;
+
+        [Required]
+        public string ConfirmPassword { get; set; } = string.Empty;
     }
 
     public class LoginRequestDto
@@ -35,7 +38,7 @@ namespace BattleGrid.Contracts.RequestDtos
     public class PasswordUpdateRequestDto
     {
         // It is required but ofcourse, we will not ask the user for their ID.
-        // We will take it from route, access token cookie or localStorage
+        // We will take it from the access token cookie and place it in the DTO
         [Required]
         [JsonIgnore]
         public int UserID { get; set; }
@@ -45,8 +48,14 @@ namespace BattleGrid.Contracts.RequestDtos
 
         [Required]
         public string NewPassword { get; set; } = string.Empty;
+
+        [Required]
+        public string ConfirmNewPassword { get; set; } = string.Empty;
     }
 
+    /* In case there is an expired RefreshToken in user's browser cookies,
+     *  we will use the expired token to determine the user and request a new RefreshToken
+     */
     public class RefreshTokenRequestDto
     {
         public string? RefreshToken { get; set; }

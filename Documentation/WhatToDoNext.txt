@@ -1,6 +1,6 @@
 [✔] : Main objective is completed fully
 
-[✓] : Sub-objevtive is completed fully
+[✓] : Sub-objective is completed fully
 
 [+] : Any objective partially completed
 
@@ -17,19 +17,20 @@
 	[✓] 2.2 - Create the DbContext and configure it to use PostgreSQL
 	[✓] 2.3 - Implement swaggerUI for API documentation and testing
 	[✓] 2.4 - Test the connection to the DB by creating a simple endpoint that;
-		[✓] 2.4.1 retrieves data from one of the tables
-		[✓] 2.4.2 inserts data into one of the tables
+		[✓] 2.4.1 - retrieves data from one of the tables
+		[✓] 2.4.2 - inserts data into one of the tables
 
-[+] 3 - Create the backend/server, complete with all the services, interfaces and controllers
+[✔] 3 - Create the backend/server, complete with all the services, interfaces and controllers
 	[✓] 3.1 - Implement the entities and models in backend to represent the DB tables
 	[✓] 3.2 - Implement AuthServices to handle session-related operations (user registration and login etc)
-	[+]	3.2 - Implement UserServices to handle user-related operations
-	[✓]	3.3 - Implement ShipTypeServices
-	[✓]	3.4 - Implement ShipPlacementServices
-	[✓]	3.5 - Implement MatchServices
-	[+]	3.6 - Implement AdminServices
-	[✓] 3.7 - Implement ReplayServices
-	[✓] 3.8 - JwtHelper for Access and Refresh tokens
+	[✓]	3.3 - Implement UserServices to handle user-related operations
+	[✓]	3.4 - Implement ShipTypeServices
+	[✓]	3.5 - Implement ShipPlacementServices
+	[✓]	3.6 - Implement MatchServices
+	[✓]	3.7 - Implement AdminServices
+	[✓] 3.8 - Implement ReplayServices
+	[✓] 3.9 - JwtHelper for Access and Refresh tokens
+	[✓] 3.10 - Implement LeaderboardService
 		 .
 		 .
 		 .
@@ -41,22 +42,26 @@
 	[✓] 4.3 - Board, consisting of cells. Supports placing ships and firing shots on it
 	[✓] 4.4 - GameState. Accepts 2 players, a board for each player. Manages turn etc.
 
-[+] 5 - Implement the frontend (Blazor Server)
+[✔] 5 - Implement the frontend (Blazor Server)
 	[✓] 5.1 - Landing page
 	[✓] 5.2 - Login and Register pages
-	[+] 5.3 - Dashboard page after login
-	[+]	5.4 - Admin panel page
-	[+]	5.5 - A queue button/page
-		[✓]  5.5.1 - Users should be able to move freely between pages while they are in queue.
-		[+]  5.5.2 - 'Find a match' button should turn into 'Cancel matchmaking' while hte user is already in queue.
-	[✓]	5.6 - Game page for the actual gameplay
-	[ ]	5.7 - Leaderboard page
-	[✓]	5.8 - Match History page
+	[✓] 5.3 - Dashboard page after login
+	[✓]	5.4 - A queue button/page
+		[✓]  5.4.1 - Users should be able to move freely between pages while they are in queue.
+		[✓]  5.4.2 - 'FIND MATCH' button in NavBar should become 'IN QUEUE' and display the elapsed time 
+		in the queue and re-direct to /queue. It should not re-queue the player!
+		[✓]  5.4.3 - Add the timer the 'Find a match' button is dashboard while already in queue
+		Also, make sure it behaves the same as the 'Find a match' button in NavBar
+		[✓]  5.4.4 - Add 'Cancel matchmaking' buton in dashboard while the user is already in queue
+	[✓]	5.5 - Game page for the actual gameplay
+	[✓]	5.6 - Leaderboard page
+	[✓]	5.7 - Match History page
+	[✓]	5.8 - Admin panel page
 	[✓] 5.9 - Match replay capability
-	[ ] 5.10 - Settings page for users to update user name, password, and email.
-	[+] 5.11 - Clean-up the UI. Remove debug texts, remove testing pages like /users etc.
+	[✓] 5.10 - Settings page for users to update user name, password, and email
+	[✓] 5.11 - Clean-up the UI. Remove debug texts, remove or repurpose testing pages like /users etc.
 
-[+] 6 - Implement SignalR
+[✔] 6 - Implement SignalR
 	[✓] 6.1 - Queue Hub. A single hub for all the players
 	[✓] 6.2 - Matchmaking Logic based on Ranking and time elapsed in queue for a player
 	[✓] 6.3 - Game Hub. A new group (SignalR works with groups, not instances) for every matched player duo
@@ -64,11 +69,15 @@
 	[✓] 6.5 - Keep player moves (shots) in memory until the game is over, then save it all to DB at once. Preserve the order of shots!
 	[✓] 6.6 - Ranking change logic after a game is over. It is mainly based on rank difference between opponents
 
-[ ] 7 - Add visuals to the game.
-	[✓] 7.1 - Ship visuals
-	[ ] 7.2 - A simple sea background with some waves on it (static)
-	[+] 7.3 - Update a ships look when it is partially hit
-	[+] 7.4 - Then, another update for when it is completely destroyed
+[+] 7 - Add visuals and sound to the game.
+	[✓] 7.1 - Sounds for:
+		[✓] 7.1.1 - Game found
+		[✓] 7.1.2 - Game ended: Victory and Defeat
+		[✓] 7.1.3 - Hit and miss
+	[✓] 7.2 - Ship visuals
+	[ ] 7.3 - A simple sea background with some waves on it (static)
+	[✓] 7.4 - Update a ships look when it is partially hit
+	[✓] 7.5 - Then, another update for when it is completely destroyed
 
 [ ] 8 - Do research for options to deploy the app
 	[ ] 8.1 - Deploy the app!

@@ -96,12 +96,13 @@ public class ApiService
         }
     }
 
-    public async Task<List<UserResponseDto>?> GetAllUsersAsync()
+    public async Task<PagedUsersResponseDto?> GetUsersPageAsync(int page = 1, int pageSize = 20)
     {
         ApplyAuth();
         try
         {
-            return await _http.GetFromJsonAsync<List<UserResponseDto>>("/api/User/all");
+            return await _http.GetFromJsonAsync<PagedUsersResponseDto>(
+                $"/api/User/all?page={page}&pageSize={pageSize}");
         }
         catch
         {
@@ -387,6 +388,20 @@ public class ApiService
         }
     }
 
+    public async Task<GeneralResponseDto?> GrantAdminAsync(GrantAdminRequestDto request)
+    {
+        ApplyAuth();
+        try
+        {
+            var resp = await _http.PostAsJsonAsync("/api/Admin/players/grant-admin", request);
+            return await resp.Content.ReadFromJsonAsync<GeneralResponseDto>();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     public async Task<AdminUserProfileResponseDto?> GetAdminUserProfileAsync(int userId)
     {
         ApplyAuth();
@@ -408,6 +423,31 @@ public class ApiService
             var capped = Math.Clamp(limit, 1, 20);
             return await _http.GetFromJsonAsync<MatchHistoryResponseDto>(
                 $"/api/Admin/players/{userId}/match-history?limit={capped}");
+        }
+        catch
+        {
+            return null;
+        }
+    }
+    public async Task<LeaderboardListResponseDto?> GetCurrentSeasonLeaderboardAsync()
+    {
+        ApplyAuth();
+        try
+        {
+            return await _http.GetFromJsonAsync<LeaderboardListResponseDto>("/api/Leaderboard/season");
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<LeaderboardListResponseDto?> GetAllTimeLeaderboardAsync()
+    {
+        ApplyAuth();
+        try
+        {
+            return await _http.GetFromJsonAsync<LeaderboardListResponseDto>("/api/Leaderboard/all-time");
         }
         catch
         {

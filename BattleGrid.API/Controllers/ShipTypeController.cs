@@ -1,13 +1,6 @@
-
-using BattleGrid.Contracts.RequestDtos;
 using BattleGrid.Application.Interfaces;
-using System.Net;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using BattleGrid.Infrastructure.Data;
-using BattleGrid.Domain.Entities;
-using BattleGrid.Contracts.ResponseDtos;
+using Microsoft.AspNetCore.Mvc;
 
 
 namespace BattleGrid.API.Controllers
@@ -19,7 +12,7 @@ namespace BattleGrid.API.Controllers
         private readonly BattleGridDbContext _context;
         private readonly IShipTypeServices _shipTypeService;
 
-        public ShipTypeController(BattleGridDbContext context, 
+        public ShipTypeController(BattleGridDbContext context,
                                   IShipTypeServices shipTypeService)
         {
             _context = context;
@@ -30,10 +23,11 @@ namespace BattleGrid.API.Controllers
         public async Task<ActionResult> ShipTypeList()
         {
             try
-            {               
+            {
                 var shipList = await _shipTypeService.ShipTypeListAsync();
 
-                if (shipList == null) {
+                if (shipList == null)
+                {
                     return NotFound("No ships found!");
                 }
 

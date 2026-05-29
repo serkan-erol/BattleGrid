@@ -221,6 +221,53 @@ namespace BattleGrid.Application.Services
             return response;
         }
 
+        public async Task<GeneralResponseDto> GrantAdminAsync(GrantAdminRequestDto dto)
+        {
+            var response = new GeneralResponseDto { Success = false, Message = string.Empty };
+
+            var admin = await _userServices.GetByIdAsync(dto.AdminID);
+            if (admin is null || !admin.IsAdmin)
+            {
+                response.Message = "You do NOT have permissions to complete this action!";
+                return response;
+            }
+
+            dto.PlayerInfo = await _normalizationHelper.NormalizeLoginInfoAsync(dto.PlayerInfo);
+
+            var user = await _context.User
+                .Where(u => u.Email == dto.PlayerInfo || u.UserName == dto.PlayerInfo)
+                .FirstOrDefaultAsync();
+
+            if (user is null)
+            {
+                response.Message = "There is no such user.";
+                return response;
+            }
+
+            if (user.UserID == admin.UserID)
+            {
+                response.Message = "You already have administrator privileges.";
+                return response;
+            }
+
+            if (user.IsAdmin)
+            {
+                response.Message = "This player is already an administrator.";
+                return response;
+            }
+
+            var now = DateTimeOffset.UtcNow.ToUniversalTime();
+            user.IsAdmin = true;
+            user.LastUpdatedAt = now;
+            user.UpdateReason = $"Granted admin by administrator (admin #{dto.AdminID}).";
+            await _context.SaveChangesAsync();
+
+            response.Success = true;
+            response.Message =
+                $"Player {dto.PlayerInfo} is now an administrator. They must sign in again for admin access to take effect.";
+            return response;
+        }
+
         private static DateTimeOffset? ResolveBannedUntil(BanRequestDto dto, DateTimeOffset? bannedAtOverride = null)
         {
             if (dto.BannedUntil.HasValue)

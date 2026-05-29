@@ -1,8 +1,7 @@
 
 using BattleGrid.API.Extensions;
-using BattleGrid.Contracts.RequestDtos;
-using BattleGrid.Contracts.ResponseDtos;
 using BattleGrid.Application.Interfaces;
+using BattleGrid.Contracts.RequestDtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,9 +11,6 @@ namespace BattleGrid.API.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private const string AccessTokenCookieName = "AccessToken";
-        private const string RefreshTokenCookieName = "RefreshToken";
-
         private readonly IAuthServices _authServices;
 
         public AuthController(IAuthServices authServices)
@@ -60,7 +56,7 @@ namespace BattleGrid.API.Controllers
                     return Unauthorized(loginResponse.Message);
                 }
 
-                AppendAuthCookies(loginResponse);
+                Response.AppendAuthCookies(loginResponse, Request.IsHttps);
                 return Ok(loginResponse);
             }
             catch
@@ -76,10 +72,10 @@ namespace BattleGrid.API.Controllers
         {
             try
             {
-                var refreshToken = ResolveRefreshToken(dto?.RefreshToken);
+                var refreshToken = Request.ResolveRefreshToken(dto?.RefreshToken);
                 var result = await _authServices.LogoutAsync(refreshToken ?? string.Empty);
 
-                ClearAuthCookies();
+                Response.ClearAuthCookies();
 
                 if (!result.Success)
                 {
@@ -100,7 +96,7 @@ namespace BattleGrid.API.Controllers
         {
             try
             {
-                var refreshToken = ResolveRefreshToken(dto?.RefreshToken);
+                var refreshToken = Request.ResolveRefreshToken(dto?.RefreshToken);
                 if (string.IsNullOrWhiteSpace(refreshToken))
                 {
                     return Unauthorized("Refresh token is required.");
@@ -109,11 +105,11 @@ namespace BattleGrid.API.Controllers
                 var refreshResponse = await _authServices.RefreshAccessTokenAsync(refreshToken);
                 if (!refreshResponse.Success)
                 {
-                    ClearAuthCookies();
+                    Response.ClearAuthCookies();
                     return Unauthorized(refreshResponse.Message);
                 }
 
-                AppendAuthCookies(refreshResponse);
+                Response.AppendAuthCookies(refreshResponse, Request.IsHttps);
                 return Ok(refreshResponse);
             }
             catch
@@ -145,59 +141,6 @@ namespace BattleGrid.API.Controllers
             {
                 return StatusCode(500, $"An error occured while updating password: {ex.Message}");
             }
-        }
-
-        private string? ResolveRefreshToken(string? bodyToken)
-        {
-            if (!string.IsNullOrWhiteSpace(bodyToken))
-            {
-                return bodyToken;
-            }
-
-            Request.Cookies.TryGetValue(RefreshTokenCookieName, out var cookieToken);
-            return cookieToken;
-        }
-
-        private void AppendAuthCookies(LoginResponseDto tokens)
-        {
-            var cookieBase = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = Request.IsHttps,
-                SameSite = SameSiteMode.Lax,
-                Path = "/"
-            };
-
-            Response.Cookies.Append(
-                AccessTokenCookieName,
-                tokens.AccessToken,
-                new CookieOptions
-                {
-                    HttpOnly = cookieBase.HttpOnly,
-                    Secure = cookieBase.Secure,
-                    SameSite = cookieBase.SameSite,
-                    Path = cookieBase.Path,
-                    Expires = tokens.ATExpiresAt
-                });
-
-            Response.Cookies.Append(
-                RefreshTokenCookieName,
-                tokens.RefreshToken,
-                new CookieOptions
-                {
-                    HttpOnly = cookieBase.HttpOnly,
-                    Secure = cookieBase.Secure,
-                    SameSite = cookieBase.SameSite,
-                    Path = cookieBase.Path,
-                    Expires = tokens.RTExpiresAt
-                });
-        }
-
-        private void ClearAuthCookies()
-        {
-            var options = new CookieOptions { Path = "/" };
-            Response.Cookies.Delete(AccessTokenCookieName, options);
-            Response.Cookies.Delete(RefreshTokenCookieName, options);
         }
     }
 }

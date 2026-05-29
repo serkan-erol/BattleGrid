@@ -1,20 +1,6 @@
+using BattleGrid.Domain.Enums;
+
 namespace BattleGrid.Contracts.ResponseDtos;
-
-/// <summary>How the match ended from the requesting player's perspective.</summary>
-public enum MatchHistoryEndKind
-{
-    /// <summary>Decisive win/loss from normal gameplay (all ships destroyed).</summary>
-    NormalBattle = 0,
-
-    /// <summary>Opponent left, forfeited, disconnected, went AFK, or abandoned ship.</summary>
-    OpponentLeft = 1,
-
-    /// <summary>The requesting player left, forfeited, disconnected, went AFK, or abandoned ship.</summary>
-    SelfLeft = 2,
-
-    /// <summary>Match status is <c>Abandoned</c> (no recorded winner).</summary>
-    Abandoned = 3
-}
 
 public sealed class MatchHistoryEntryResponseDto
 {
@@ -29,6 +15,7 @@ public sealed class MatchHistoryEntryResponseDto
     /// <summary>Domain <see cref="BattleGrid.Domain.Enums.MatchStatus"/> value.</summary>
     public int Status { get; init; }
 
+    /// <summary>Domain <see cref="BattleGrid.Domain.Enums.MatchHistoryEndKind"/> value.</summary>
     public MatchHistoryEndKind EndKind { get; init; }
 
     public DateTimeOffset? FinishedAt { get; init; }

@@ -1,5 +1,4 @@
 using BattleGrid.Application.Interfaces;
-using BattleGrid.Contracts.RequestDtos;
 using BattleGrid.Contracts.ResponseDtos;
 using BattleGrid.Domain.Entities;
 using BattleGrid.Infrastructure.Data;
@@ -29,14 +28,39 @@ namespace BattleGrid.Application.Services
             _banListServices = banListServices;
         }
 
-        public async Task<List<UserResponseDto>> GetAllUsersAsync()
+        public const int DefaultUsersPageSize = 20;
+        public const int MaxUsersPageSize = 100;
+
+        public async Task<PagedUsersResponseDto> GetUsersPageAsync(int page, int pageSize)
         {
-            var users = await _context.User
-                .OrderBy(c => c.UserID)
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, MaxUsersPageSize);
+
+            var query = _context.User.OrderBy(c => c.UserID);
+            var totalCount = await query.CountAsync();
+
+            var totalPages = totalCount == 0
+                ? 0
+                : (int)Math.Ceiling(totalCount / (double)pageSize);
+
+            if (totalPages > 0 && page > totalPages)
+                page = totalPages;
+
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Select(c => MapToResponseDto(c))
                 .AsNoTracking()
                 .ToListAsync();
-            return users;
+
+            return new PagedUsersResponseDto
+            {
+                Items = items,
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = totalPages
+            };
         }
 
         public async Task<UserResponseDto?> GetByIdAsync(int userId)

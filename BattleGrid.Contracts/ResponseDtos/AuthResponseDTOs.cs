@@ -14,17 +14,4 @@
 
         public DateTimeOffset RTExpiresAt { get; set; }
     }
-
-    /*
-    public class TokenResponseDto
-    {
-        public string? AccessToken { get; set; }
-
-        public string? RefreshToken { get; set; }
-
-        public DateTimeOffset? ATExpiresAt { get; set; }
-
-        public DateTimeOffset? RTExpiresAt { get; set; }
-    }
-    */
 }
