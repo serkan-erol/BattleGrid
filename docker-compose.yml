@@ -33,7 +33,8 @@ services:
       Jwt__Secret: "LongAndSecureEnoughSigningKeyForBattleGrid321!"
       Jwt__Issuer: "BattleGrid_Server"
       Jwt__Audience: "BattleGrid_User"
-      Cors__AllowedOrigins__0: "http://localhost:4746"
+      Cors__AllowedOrigins__0: "https://localhost:4745"
+      Cors__AllowedOrigins__1: "http://localhost:4746"
 
     depends_on:
       db:
