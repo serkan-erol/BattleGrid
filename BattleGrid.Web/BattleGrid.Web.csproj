@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RequiresAspNetWebAssets>true</RequiresAspNetWebAssets>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
   </PropertyGroup>
 
@@ -16,5 +17,18 @@
     <ProjectReference Include="..\BattleGrid.Contracts\BattleGrid.Contracts.csproj" />
     <ProjectReference Include="..\BattleGrid.Domain\BattleGrid.Domain.csproj" />
   </ItemGroup>
+
+  <!-- Framework JS from internal.assets is not copied to publish output by default; copy to wwwroot for Docker/Render. -->
+  <Target Name="CopyBlazorFrameworkToOutput" AfterTargets="Build;Publish">
+    <ItemGroup>
+      <_BlazorFrameworkJs Include="$(NuGetPackageRoot)microsoft.aspnetcore.app.internal.assets/*/_framework/blazor.server.js" />
+      <_BlazorFrameworkJs Include="$(NuGetPackageRoot)microsoft.aspnetcore.app.internal.assets/*/_framework/blazor.web.js" />
+    </ItemGroup>
+    <MakeDir Directories="$(OutputPath)wwwroot\_framework" />
+    <Copy SourceFiles="@(_BlazorFrameworkJs)"
+          DestinationFiles="@(_BlazorFrameworkJs->'$(OutputPath)wwwroot\_framework\%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true"
+          Condition="'@(_BlazorFrameworkJs)' != ''" />
+  </Target>
 
 </Project>

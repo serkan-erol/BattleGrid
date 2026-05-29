@@ -12,6 +12,7 @@ using BattleGrid.Domain;
 using BattleGrid.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -41,14 +42,22 @@ if (corsOrigins.Length == 0)
         "http://127.0.0.1:4746",
         "https://localhost:4745",               // https web localhost
         "https://127.0.0.1:4745",
-        "http://api:8080",                      // api docker
+        "http://api:8080",                      // api docker (default port)
         "https://api:8080",
-        "http://web:8080",                      // web docker
+        "http://web:8080",                      // web docker (default port)
         "https://web:8080",
+        "http://api:10000",                      // api docker
+        "https://api:10000",
+        "http://web:10000",                      // web docker
+        "https://web:10000",
         "http://battlegrid-api.onrender.com",   // api deployed
         "https://battlegrid-api.onrender.com",
         "http://battlegrid-web.onrender.com",   // web deployed
-        "https://battlegrid-web.onrender.com"
+        "https://battlegrid-web.onrender.com",
+        "https://battlegrid-api-kwxz.onrender.com", // api deployed
+        "http://battlegrid-api-kwxz.onrender.com",
+        "https://battlegrid-web-lzql.onrender.com", // web deployed
+        "http://battlegrid-web-lzql.onrender.com"
     ];
 }
 
@@ -131,7 +140,23 @@ builder.Services.AddAuthorization(options =>
 });
 builder.Services.AddScoped<IAuthorizationHandler, AdminAuthorizationHandler>();
 
-builder.Services.AddSignalR();
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor |
+        ForwardedHeaders.XForwardedProto |
+        ForwardedHeaders.XForwardedHost;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = builder.Environment.IsDevelopment();
+    options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);
+    options.HandshakeTimeout = TimeSpan.FromSeconds(30);
+});
 builder.Services.AddSingleton<MatchmakingCoordinator>();
 builder.Services.AddHostedService<MatchmakingBackgroundService>();
 builder.Services.AddHostedService<StaleMatchCleanupBackgroundService>();
@@ -198,11 +223,18 @@ if (app.Environment.IsDevelopment())
 // Leaving enabled can sometimes cause infinite redirect loops in free Docker containers
 //aaa app.UseHttpsRedirection();
 
+app.UseForwardedHeaders();
+
 // Enable CORS
 app.UseCors("AllowBlazorFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseWebSockets(new WebSocketOptions
+{
+    KeepAliveInterval = TimeSpan.FromSeconds(120)
+});
 
 app.MapControllers();
 

@@ -1049,14 +1049,7 @@ else
 
     async Task StartHubAsync()
     {
-        var api = Config["ApiBaseUrl"]?.TrimEnd('/') ?? "http://localhost:4744";
-        _hub = new HubConnectionBuilder()
-            .WithUrl($"{api}/game/{MatchId}", options =>
-            {
-                options.AccessTokenProvider = () => Task.FromResult<string?>(Auth.AccessToken);
-            })
-            .WithAutomaticReconnect()
-            .Build();
+        _hub = ApiHubConnectionFactory.Create(Config, Auth, $"/game/{MatchId}");
 
         _hub.On<int>("PlayerJoined", uid =>
         {

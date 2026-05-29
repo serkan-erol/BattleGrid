@@ -2,6 +2,7 @@
 WORKDIR /app
 
 ENV ASPNETCORE_URLS=http://+:10000
+ENV ASPNETCORE_ENVIRONMENT=Production
 EXPOSE 10000
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
@@ -16,8 +17,8 @@ COPY ["BattleGrid.Infrastructure/BattleGrid.Infrastructure.csproj",   "BattleGri
 RUN dotnet restore "BattleGrid.API/BattleGrid.API.csproj"
 
 COPY . .
-WORKDIR "/src/BattleGrid.API"
-RUN dotnet publish "BattleGrid.API.csproj" -c Release -o /app/publish --no-restore
+#WORKDIR "/src/BattleGrid.API"
+RUN dotnet publish "BattleGrid.API/BattleGrid.API.csproj" -c Release -o /app/publish --no-restore
 
 FROM base AS final
 WORKDIR /app

@@ -249,14 +249,7 @@ public sealed class QueueMatchmakingService : IAsyncDisposable
 
     async Task BuildAndStartHubAsync()
     {
-        var api = _config["ApiBaseUrl"]?.TrimEnd('/') ?? "http://localhost:4744";
-        _hub = new HubConnectionBuilder()
-            .WithUrl($"{api}/queue", options =>
-            {
-                options.AccessTokenProvider = () => Task.FromResult<string?>(_auth.AccessToken);
-            })
-            .WithAutomaticReconnect()
-            .Build();
+        _hub = ApiHubConnectionFactory.Create(_config, _auth, "/queue");
 
         if (!_handlersRegistered)
         {
