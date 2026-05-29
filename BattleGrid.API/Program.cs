@@ -50,13 +50,17 @@ if (corsOrigins.Length == 0)
         "https://api:10000",
         "http://web:10000",                      // web docker
         "https://web:10000",
-        "http://battlegrid-api.onrender.com",   // api deployed
+        "http://battlegrid-api.onrender.com",   // api deployed (test)
         "https://battlegrid-api.onrender.com",
-        "http://battlegrid-web.onrender.com",   // web deployed
+        "http://battlegrid-web.onrender.com",   // web deployed (test)
         "https://battlegrid-web.onrender.com",
-        "https://battlegrid-api-kwxz.onrender.com", // api deployed
+        "http://battlegridapi.onrender.com",   // api deployed (production branch)
+        "https://battlegridapi.onrender.com",
+        "http://battlegridweb.onrender.com",   // web deployed (production branch)
+        "https://battlegridweb.onrender.com",
+        "https://battlegrid-api-kwxz.onrender.com", // api deployed (development branch)
         "http://battlegrid-api-kwxz.onrender.com",
-        "https://battlegrid-web-lzql.onrender.com", // web deployed
+        "https://battlegrid-web-lzql.onrender.com", // web deployed (development branch)
         "http://battlegrid-web-lzql.onrender.com"
     ];
 }
