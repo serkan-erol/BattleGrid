@@ -79,5 +79,5 @@
 	[✓] 7.4 - Update a ships look when it is partially hit
 	[✓] 7.5 - Then, another update for when it is completely destroyed
 
-[ ] 8 - Do research for options to deploy the app
-	[ ] 8.1 - Deploy the app!
+[✔] 8 - Do research for options to deploy the app
+	[✓] 8.1 - Deploy the app! *** It is deployed on Render, and fully functional!

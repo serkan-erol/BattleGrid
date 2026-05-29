@@ -1,9 +1,13 @@
 <Solution>
   <Folder Name="/Documentation/">
+    <File Path="Documentation/BattleGrid_DSD.pdf" />
     <File Path="Documentation/BattleGrid_ER_Diagram.pdf" />
     <File Path="Documentation/BattleGrid_ER_Diagram.png" />
+    <File Path="Documentation/BattleGrid_Presentation.pptx" />
     <File Path="Documentation/BattleGrid_Relational_Diagram.pdf" />
     <File Path="Documentation/BattleGrid_Relational_Diagram.png" />
+    <File Path="Documentation/BattleGrid_RSD.pdf" />
+    <File Path="Documentation/BattleGrid_Testing_Document.pdf" />
     <File Path="Documentation/Match_Flow_Diagram.png" />
     <File Path="Documentation/Match_Flow_Diagram.svg" />
     <File Path="Documentation/WhatToDoNext.txt" />

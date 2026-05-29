@@ -130,7 +130,7 @@ namespace BattleGrid.Application.Services
                 return new GeneralResponseDto
                 {
                     Success = true,
-                    Message = "User registered succesfully."
+                    Message = "User registered successfully."
                 };
             }
             catch (Exception)

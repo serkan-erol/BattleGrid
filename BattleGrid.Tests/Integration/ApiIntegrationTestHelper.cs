@@ -20,7 +20,7 @@ internal static class ApiIntegrationTestHelper
     public const string LoginPath = "/api/Auth/login";
     public const string LogoutPath = "/api/Auth/logout";
     public const string RefreshPath = "/api/Auth/refresh";
-    public const string ExpectedRegisterSuccessMessage = "User registered succesfully.";
+    public const string ExpectedRegisterSuccessMessage = "User registered successfully.";
     public const string DefaultTestPassword = "PerfTest_Pass123!";
 
     public static void BindTracker(IntegrationTestDataTracker? tracker) => ActiveTracker.Value = tracker;

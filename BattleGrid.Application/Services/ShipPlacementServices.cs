@@ -49,7 +49,7 @@ namespace BattleGrid.Application.Services
             return new GeneralResponseDto
             {
                 Success = true,
-                Message = "Ship placed succesfully."
+                Message = "Ship placed successfully."
             };
         }
 
